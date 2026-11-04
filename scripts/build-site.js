@@ -202,6 +202,14 @@ const PAGE_META = {
     nav: "domains",
     type: "article",
   },
+  404: {
+    title: "Page not found - {{site_domain}}",
+    description: "That address is not part of {{site_domain}}. Check whether the name you wanted is free, or browse the registered subdomains.",
+    nav: null,
+    path: "/404",
+    type: "website",
+    robots: "noindex, follow",
+  },
 };
 
 function renderPartial(name, vars) {
@@ -303,7 +311,7 @@ function renderPage(name, vars) {
     page_title: renderTemplateText(meta.title, vars),
     page_description: renderTemplateText(meta.description, vars),
     page_url: vars.page_url || pageUrl(vars.site_domain, meta.path || "/"),
-    page_robots: vars.page_robots || "index, follow, max-image-preview:large",
+    page_robots: vars.page_robots || meta.robots || "index, follow, max-image-preview:large",
     og_type: meta.type || "website",
     og_image: `https://${vars.site_domain}/og.png`,
   };
@@ -617,6 +625,14 @@ function buildSitemap(cfg, zones, byZone, slugsByZone) {
   ].join("\n");
 }
 
+function buildSchema(cfg) {
+  const schemaPath = path.join(REGISTRY_PATH, "domains", "SCHEMA.json");
+  if (!fs.existsSync(schemaPath)) return null;
+  const schema = readJson(schemaPath, "registry schema");
+  schema.$id = `https://${cfg.siteDomain}/domains.schema.json`;
+  return JSON.stringify(schema, null, 2) + "\n";
+}
+
 function buildRobots(cfg) {
   return [
     "User-agent: *",
@@ -666,6 +682,7 @@ function buildLlmsTxt(cfg, zones, byZone, slugsByZone, totalCount) {
     "",
     `- ${base}/registry-data.json: every zone with its taken, reserved and blocked labels. This is what the checker queries. Shape: { zones: [{ name, taken[], reserved[], blocked[], maxLength }] }.`,
     `- ${base}/domains.json: every registered subdomain with owner, repo, description and DNS record types.`,
+    `- ${base}/domains.schema.json: JSON Schema (draft-07) for a single registry entry, the same file the registry repository validates against. Its \`$id\` is this URL, so an entry can point at ${base}/domains.schema.json and be checked by any JSON Schema validator.`,
     `- ${base}/sitemap.xml: every indexable URL.`,
     `- ${base}/llms.txt: this file.`,
     "",
@@ -769,6 +786,8 @@ function main() {
 
   fs.writeFileSync(path.join(DIST_DIR, "CNAME"), `${cfg.siteDomain}\n`);
   fs.writeFileSync(path.join(DIST_DIR, "robots.txt"), buildRobots(cfg));
+  const schema = buildSchema(cfg);
+  if (schema) fs.writeFileSync(path.join(DIST_DIR, "domains.schema.json"), schema);
   fs.writeFileSync(
     path.join(DIST_DIR, "llms.txt"),
     buildLlmsTxt(cfg, zones, byZone, slugsByZone, totalCount)
@@ -818,6 +837,12 @@ function main() {
   }
 
   fs.writeFileSync(path.join(DIST_DIR, "sitemap.xml"), buildSitemap(cfg, zones, byZone, slugsByZone));
+  fs.writeFileSync(path.join(DIST_DIR, "404.html"), buildStaticPage(cfg, "404", {
+    zone_example: zones[0],
+    zone_default: zones[0],
+    zone_count: zones.length,
+    domain_count: totalCount,
+  }));
 
   const subPages = Array.from(slugsByZone.values()).reduce((n, s) => n + s.size, 0);
   console.log(

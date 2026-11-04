@@ -582,6 +582,29 @@ tbody tr:hover {
   text-transform: uppercase;
 }
 
+.notfound h1 span {
+  color: var(--faint);
+}
+
+.notfound-path {
+  margin: -12px 0 32px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  max-width: 100%;
+  color: var(--faint);
+  font-size: 0.8125rem;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+.notfound-links {
+  max-width: 72ch;
+}
+
+.notfound-links ul {
+  margin-top: 0;
+}
+
 .legal-layout {
   display: grid;
   grid-template-columns: 236px minmax(0, 1fr);

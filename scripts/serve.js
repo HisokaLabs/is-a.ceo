@@ -57,6 +57,12 @@ function resolveFile(urlPath) {
 const server = http.createServer((req, res) => {
   const file = resolveFile(req.url);
   if (!file) {
+    const page = path.join(DIST_DIR, "404.html");
+    if (fs.existsSync(page)) {
+      res.writeHead(404, { "Content-Type": MIME[".html"], "Cache-Control": "no-cache, no-store, must-revalidate" });
+      fs.createReadStream(page).pipe(res);
+      return;
+    }
     res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
     res.end("Not found: " + req.url);
     return;

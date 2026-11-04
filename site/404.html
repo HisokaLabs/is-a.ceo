@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{{head}}
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+{{header}}
+
+<main class="wrap" id="main">
+
+  <section class="hero notfound">
+    <p class="eyebrow">Error 404</p>
+    <h1>Nobody claimed <span>this</span>.</h1>
+    <p>
+      The address you opened is not part of this site. Either it was never a real
+      page, the subdomain was never registered, or it moved somewhere else.
+    </p>
+    <p class="notfound-path mono" id="notfound-path" hidden></p>
+
+    <div class="cta-row">
+      <a class="cta" href="/check" id="notfound-check">Check a name</a>
+      <a class="cta secondary" href="/#domains">Browse subdomains</a>
+      <a class="cta secondary" href="/status">Zone status</a>
+    </div>
+  </section>
+
+  <section class="prose notfound-links">
+    <h2>Everything that does exist</h2>
+    <ul>
+      <li><a href="/">Home</a>: the zone, the rules, and the full list of registered names.</li>
+      <li><a href="/check">Check a name</a>: see whether a subdomain is free before you open a pull request.</li>
+      <li><a href="/status">Status</a>: live DNS resolution for every registered name, queried over DNS-over-HTTPS.</li>
+      <li><a href="/abuse">Abuse</a>: report a subdomain that is being used for something it should not be.</li>
+      <li><a href="/terms">Terms of Service</a>, <a href="/privacy">Privacy Policy</a>, <a href="/disclaimer">Disclaimer</a>.</li>
+      <li><a href="https://github.com/{{registry_repo}}">The registry on GitHub</a>: every name is one JSON file in <code>{{registry_dir}}/</code>.</li>
+    </ul>
+    <p>
+      If you expected a registered subdomain here and it is gone, the entry was
+      probably removed or never merged. <a href="mailto:{{contact_email}}">{{contact_email}}</a>
+      answers that question.
+    </p>
+  </section>
+
+</main>
+
+{{footer}}
+
+<script>
+(function () {
+  var pathEl = document.getElementById('notfound-path');
+  var checkEl = document.getElementById('notfound-check');
+  if (!pathEl) return;
+
+  var path = window.location.pathname.replace(/\/+$/, '');
+  if (path && path !== '') {
+    pathEl.textContent = path + window.location.search;
+    pathEl.hidden = false;
+  }
+
+  var label = path.slice(1);
+  if (checkEl && /^[a-z0-9][a-z0-9-]{0,62}$/i.test(label)) {
+    checkEl.href = '/check?name=' + encodeURIComponent(label.toLowerCase());
+    checkEl.textContent = 'Check if ' + label.toLowerCase() + ' is free';
+  }
+})();
+</script>
+
+<script src="/assets/nav.js?v={{asset_version}}"></script>
+</body>
+</html>

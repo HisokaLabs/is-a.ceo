@@ -6,6 +6,8 @@ on:
       - main
   schedule:
     - cron: '17 * * * *'   # hourly, so the list stays fresh even without a push
+  repository_dispatch:
+    types: [registry-updated]
   workflow_dispatch:
 
 permissions:
