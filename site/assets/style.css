@@ -1004,6 +1004,12 @@ tbody tr:hover {
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 18%, transparent);
 }
 
+.checker-row.is-invalid,
+.checker-row.is-invalid:focus-within {
+  border-color: var(--err);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--err) 16%, transparent);
+}
+
 .checker-row input {
   flex: 1;
   min-width: 0;
@@ -1045,40 +1051,71 @@ tbody tr:hover {
 
 .check-result {
   max-width: 540px;
-  margin-top: 20px;
-  padding: 20px 22px;
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
-  background: var(--raise);
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  animation: result-in 260ms cubic-bezier(0.2, 0, 0, 1) both;
 }
 
-.check-status {
-  margin-bottom: 6px;
-  font-size: 1.0625rem;
+@keyframes result-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .check-result {
+    animation: none;
+  }
+}
+
+.check-result .check-domain {
+  margin: 0 0 10px;
+  font-size: 1.5rem;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
 }
 
-.check-status.free {
+.check-result .check-detail {
+  margin: 0;
+  max-width: 58ch;
+  color: var(--muted);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+.verdict {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.check-result[data-state="free"] .verdict {
   color: var(--ok);
 }
 
-.check-status.taken {
+.check-result[data-state="taken"] .verdict {
   color: var(--warn);
 }
 
-.check-status.reserved {
+.check-result[data-state="reserved"] .verdict {
   color: var(--info);
 }
 
-.check-status.blocked {
+.check-result[data-state="blocked"] .verdict {
   color: var(--err);
 }
 
-.check-detail {
-  margin: 0 0 16px;
-  color: var(--muted);
-  font-size: 0.9375rem;
+.check-result .check-file {
+  margin: 8px 0 0;
+  color: var(--faint);
+  font-size: 0.8125rem;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+.check-result .cta-row {
+  margin-top: 20px;
 }
 
 .pill {

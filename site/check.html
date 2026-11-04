@@ -24,18 +24,20 @@
         Zone
         <select id="zone" aria-label="Zone to check against"></select>
       </label>
-      <div class="checker-row">
+      <div class="checker-row" id="checker-row">
         <input type="text" id="name" name="name" placeholder="your-name"
                autocapitalize="none" autocorrect="off" spellcheck="false"
-               aria-label="Subdomain to check">
+               aria-label="Subdomain to check" aria-describedby="name-error">
         <span class="checker-suffix" id="suffix" aria-hidden="true">.{{zone_default}}</span>
         <button type="submit" class="cta">Check</button>
       </div>
+      <p class="sr-only" id="name-error" role="alert"></p>
     </form>
 
     <div id="result" class="check-result" role="status" aria-live="polite" hidden>
-      <div id="result-status" class="check-status"></div>
+      <p id="result-domain" class="check-domain mono"></p>
       <p id="result-detail" class="check-detail"></p>
+      <p id="result-file" class="check-file mono" hidden></p>
       <div class="cta-row" id="result-actions"></div>
     </div>
   </section>
@@ -72,18 +74,41 @@
   var input = document.getElementById('name');
   var suffix = document.getElementById('suffix');
   var box = document.getElementById('result');
-  var status = document.getElementById('result-status');
+  var domainEl = document.getElementById('result-domain');
   var detail = document.getElementById('result-detail');
+  var fileRow = document.getElementById('result-file');
   var actions = document.getElementById('result-actions');
+  var row = document.getElementById('checker-row');
+  var fieldError = document.getElementById('name-error');
   var data = null;
 
   var LABEL_RE = /^_?[a-z0-9]([a-z0-9-]*[a-z0-9])?$/;
+  var VERDICTS = {
+    free: 'Available.',
+    taken: 'Taken.',
+    reserved: 'Reserved.',
+    blocked: 'Blocked.'
+  };
 
-  function set(state, headline, message, buttons) {
+  function set(state, domain, message, buttons, file) {
     box.hidden = false;
-    status.textContent = headline;
-    status.className = 'check-status ' + state;
-    detail.textContent = message || '';
+    box.dataset.state = state;
+    domainEl.textContent = domain;
+    detail.textContent = '';
+    if (message) {
+      var verb = document.createElement('strong');
+      verb.className = 'verdict';
+      verb.textContent = VERDICTS[state] || state;
+      detail.appendChild(verb);
+      detail.appendChild(document.createTextNode(' ' + message));
+    }
+    if (file) {
+      fileRow.textContent = file;
+      fileRow.hidden = false;
+    } else {
+      fileRow.textContent = '';
+      fileRow.hidden = true;
+    }
     actions.innerHTML = '';
     (buttons || []).forEach(function (b) {
       var a = document.createElement('a');
@@ -92,6 +117,33 @@
       a.className = b.primary ? 'cta' : 'cta secondary';
       actions.appendChild(a);
     });
+    actions.hidden = !(buttons && buttons.length);
+  }
+
+  function clearFieldError() {
+    row.classList.remove('is-invalid');
+    input.removeAttribute('aria-invalid');
+    fieldError.textContent = '';
+  }
+
+  function fieldErrorShow(message) {
+    row.classList.add('is-invalid');
+    input.setAttribute('aria-invalid', 'true');
+    fieldError.textContent = message;
+    box.hidden = true;
+    input.focus();
+  }
+
+  function syncUrl(sub) {
+    var params = new URLSearchParams(window.location.search);
+    if (sub) params.set('name', sub);
+    else params.delete('name');
+    if (data && data.zones.length > 1) params.set('zone', currentZone().name);
+    var qs = params.toString();
+    var next = window.location.pathname + (qs ? '?' + qs : '') + window.location.hash;
+    if (next !== window.location.pathname + window.location.search + window.location.hash) {
+      window.history.replaceState(null, '', next);
+    }
   }
 
   function currentZone() {
@@ -101,34 +153,42 @@
   function check(raw) {
     var z = currentZone();
     var sub = String(raw || '').toLowerCase().trim().replace(/\.$/, '');
-    if (!sub) return set('blocked', 'Empty', 'Type a subdomain first.', []);
+    if (!sub) {
+      fieldErrorShow('Type a subdomain first.');
+      return;
+    }
 
     var name = sub.indexOf('*.') === 0 ? sub.slice(2) : sub;
     if (!name) {
-      return set('blocked', 'Invalid wildcard', 'A wildcard needs a base name, like *.app.', []);
+      fieldErrorShow('A wildcard needs a base name, like *.app.');
+      return;
     }
     if (name.length > 253) {
-      return set('blocked', 'Too long', 'The full name is limited to 253 characters.', []);
+      fieldErrorShow('The full name is limited to 253 characters.');
+      return;
     }
     var labels = name.split('.');
     var bad = labels.some(function (l) { return !l || l.length > (z.maxLength || 63) || !LABEL_RE.test(l); });
     if (bad) {
-      return set('blocked', 'Invalid name',
-        'Use lowercase letters, digits and hyphens, optionally with a leading underscore per label. Each label starts and ends with a letter or digit.', []);
+      fieldErrorShow('Only lowercase letters, digits and hyphens, with an optional leading underscore per label.');
+      return;
     }
+
+    clearFieldError();
+    syncUrl(sub);
 
     var isPlain = sub.indexOf('.') === -1 && sub !== '@' && sub !== '*';
     if (isPlain && z.reserved.indexOf(sub) !== -1) {
-      return set('reserved', sub + '.' + z.name + ' is reserved',
-        'This name is used by the zone itself and cannot be claimed.', []);
+      return set('reserved', sub + '.' + z.name,
+        'The zone uses this name for its own infrastructure, so it cannot be claimed.', []);
     }
     if (isPlain && z.blocked.indexOf(sub) !== -1) {
-      return set('blocked', sub + '.' + z.name + ' is blocked',
-        'This name is blocked because it is a brand or impersonation risk.', []);
+      return set('blocked', sub + '.' + z.name,
+        'Held back as a brand or impersonation risk.', []);
     }
     if (z.taken.indexOf(sub) !== -1 || z.taken.indexOf(name) !== -1) {
-      return set('taken', sub + '.' + z.name + ' is taken',
-        'Someone already owns this name in this zone. Try another name or another zone.', [
+      return set('taken', sub + '.' + z.name,
+        'Someone in this zone already claims it.', [
           { label: 'See all subdomains', href: '/#domains' }
         ]);
     }
@@ -144,11 +204,11 @@
     var href = 'https://github.com/{{registry_repo}}/new/main?filename=' +
       encodeURIComponent(filename) + '&value=' + encodeURIComponent(value);
 
-    return set('free', sub + '.' + z.name + ' is free',
-      'Claim it by opening a pull request that adds ' + filename + '.', [
+    return set('free', sub + '.' + z.name,
+      'Open one pull request and it is yours.', [
         { label: 'Claim it on GitHub', href: href, primary: true },
         { label: 'How it works', href: '/#faq' }
-      ]);
+      ], filename);
   }
 
   function fillZoneSelect() {
@@ -162,7 +222,8 @@
     });
     zoneSelect.addEventListener('change', function () {
       suffix.textContent = '.' + currentZone().name;
-      if (input.value) check(input.value);
+      if (input.value.trim()) check(input.value);
+      else syncUrl('');
     });
   }
 
@@ -171,8 +232,11 @@
     if (data) check(input.value);
   });
 
-  var wanted = window.location.hash.slice(1);
-  var wantedZone = new URLSearchParams(window.location.search).get('zone');
+  input.addEventListener('input', clearFieldError);
+
+  var params = new URLSearchParams(window.location.search);
+  var wanted = window.location.hash.slice(1) || params.get('name') || '';
+  var wantedZone = params.get('zone');
 
   fetch('/registry-data.json', { cache: 'no-store' })
     .then(function (r) { return r.json(); })
@@ -188,6 +252,7 @@
         }
       }
       input.disabled = false;
+      if (wantedZone) syncUrl(wanted);
       if (wanted) { input.value = wanted; check(wanted); }
     })
     .catch(function () {
