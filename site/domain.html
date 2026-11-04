@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{{head}}
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+{{header}}
+
+<main class="wrap" id="main">
+
+  <section class="hero">
+    <p class="eyebrow">Registered subdomain</p>
+    <h1><span class="mono">{{domain}}</span></h1>
+    <p>{{description}}</p>
+    <div class="cta-row">
+      <a class="cta" href="https://{{domain}}">Visit {{domain}}</a>
+      <a class="cta secondary" href="https://github.com/{{registry_repo}}/blob/main/{{registry_dir}}/{{subdomain}}.{{zone}}.json">View source</a>
+    </div>
+  </section>
+
+  <section class="table-section">
+    <h2>Details</h2>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th scope="col">Field</th><th scope="col">Value</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="muted">Owner</td><td>{{owner}}</td></tr>
+          <tr><td class="muted">Repository</td><td>{{repo}}</td></tr>
+          <tr><td class="muted">Zone</td><td class="mono"><a href="/#{{zone_anchor}}">{{zone}}</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="table-section">
+    <h2>DNS records</h2>
+    <p class="lead">The live records for this subdomain, straight from the zone.</p>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th scope="col">Type</th><th scope="col">Value</th></tr>
+        </thead>
+        <tbody>
+{{record_rows}}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+{{footer}}
+
+<script src="/assets/nav.js?v={{asset_version}}"></script>
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{{head}}
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+{{header}}
+
+<main class="wrap" id="main">
+
+  <section class="hero">
+    <p class="eyebrow">Availability</p>
+    <h1>Is <span>your-name</span> free?</h1>
+    <p>
+      Type a subdomain and find out before you open a pull request. The check runs
+      entirely in your browser against the registry: nothing is queried, nothing is logged.
+    </p>
+
+    <form class="checker" id="checker" autocomplete="off">
+      <label class="checker-zone" id="zone-label" hidden>
+        Zone
+        <select id="zone" aria-label="Zone to check against"></select>
+      </label>
+      <div class="checker-row">
+        <input type="text" id="name" name="name" placeholder="your-name"
+               autocapitalize="none" autocorrect="off" spellcheck="false"
+               aria-label="Subdomain to check">
+        <span class="checker-suffix" id="suffix" aria-hidden="true">.{{zone_default}}</span>
+        <button type="submit" class="cta">Check</button>
+      </div>
+    </form>
+
+    <div id="result" class="check-result" role="status" aria-live="polite" hidden>
+      <div id="result-status" class="check-status"></div>
+      <p id="result-detail" class="check-detail"></p>
+      <div class="cta-row" id="result-actions"></div>
+    </div>
+  </section>
+
+  <section class="prose">
+    <h2>How the rules work</h2>
+    <ul>
+      <li><strong>Taken</strong>: someone else owns it. Their file lives in the registry's <code>{{registry_dir}}/</code>; pick another name.</li>
+      <li><strong>Reserved</strong>: infrastructure names like <code>www</code>, <code>api</code>, <code>mail</code>. Not available.</li>
+      <li><strong>Blocked</strong>: brand and impersonation names like <code>github</code>, <code>gmail</code>. Not available.</li>
+      <li><strong>Free</strong>: claim it by opening a PR with a file at <code>{{registry_dir}}/&lt;name&gt;.&lt;zone&gt;.json</code>.</li>
+    </ul>
+    <p>
+      Dotted names (<code>_acme-challenge.app</code>) and wildcards over a base you
+      already claim (<code>*.app</code>) are also allowed. Reserved and blocked lists
+      only apply to plain single-label names. Every label is limited to 63 characters
+      (lowercase letters, digits and hyphens, with an optional leading underscore).
+    </p>
+    <p>
+      One subdomain per person per zone, so check you do not already own one there.
+      Full rules: <a href="https://github.com/{{registry_repo}}/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>.
+    </p>
+  </section>
+
+</main>
+
+{{footer}}
+
+<script>
+(function () {
+  var form = document.getElementById('checker');
+  var zoneLabel = document.getElementById('zone-label');
+  var zoneSelect = document.getElementById('zone');
+  var input = document.getElementById('name');
+  var suffix = document.getElementById('suffix');
+  var box = document.getElementById('result');
+  var status = document.getElementById('result-status');
+  var detail = document.getElementById('result-detail');
+  var actions = document.getElementById('result-actions');
+  var data = null;
+
+  var LABEL_RE = /^_?[a-z0-9]([a-z0-9-]*[a-z0-9])?$/;
+
+  function set(state, headline, message, buttons) {
+    box.hidden = false;
+    status.textContent = headline;
+    status.className = 'check-status ' + state;
+    detail.textContent = message || '';
+    actions.innerHTML = '';
+    (buttons || []).forEach(function (b) {
+      var a = document.createElement('a');
+      a.href = b.href;
+      a.textContent = b.label;
+      a.className = b.primary ? 'cta' : 'cta secondary';
+      actions.appendChild(a);
+    });
+  }
+
+  function currentZone() {
+    return data.zones[zoneSelect.selectedIndex] || data.zones[0];
+  }
+
+  function check(raw) {
+    var z = currentZone();
+    var sub = String(raw || '').toLowerCase().trim().replace(/\.$/, '');
+    if (!sub) return set('blocked', 'Empty', 'Type a subdomain first.', []);
+
+    var name = sub.indexOf('*.') === 0 ? sub.slice(2) : sub;
+    if (!name) {
+      return set('blocked', 'Invalid wildcard', 'A wildcard needs a base name, like *.app.', []);
+    }
+    if (name.length > 253) {
+      return set('blocked', 'Too long', 'The full name is limited to 253 characters.', []);
+    }
+    var labels = name.split('.');
+    var bad = labels.some(function (l) { return !l || l.length > (z.maxLength || 63) || !LABEL_RE.test(l); });
+    if (bad) {
+      return set('blocked', 'Invalid name',
+        'Use lowercase letters, digits and hyphens, optionally with a leading underscore per label. Each label starts and ends with a letter or digit.', []);
+    }
+
+    var isPlain = sub.indexOf('.') === -1 && sub !== '@' && sub !== '*';
+    if (isPlain && z.reserved.indexOf(sub) !== -1) {
+      return set('reserved', sub + '.' + z.name + ' is reserved',
+        'This name is used by the zone itself and cannot be claimed.', []);
+    }
+    if (isPlain && z.blocked.indexOf(sub) !== -1) {
+      return set('blocked', sub + '.' + z.name + ' is blocked',
+        'This name is blocked because it is a brand or impersonation risk.', []);
+    }
+    if (z.taken.indexOf(sub) !== -1 || z.taken.indexOf(name) !== -1) {
+      return set('taken', sub + '.' + z.name + ' is taken',
+        'Someone already owns this name in this zone. Try another name or another zone.', [
+          { label: 'See all subdomains', href: '/#domains' }
+        ]);
+    }
+
+    var filename = '{{registry_dir}}/' + sub + '.' + z.name + '.json';
+    var value = JSON.stringify({
+      domain: z.name,
+      subdomain: sub,
+      owner: 'your-github-username',
+      repo: 'github.com/you/your-repo',
+      description: 'What this subdomain is for.'
+    }, null, 2);
+    var href = 'https://github.com/{{registry_repo}}/new/main?filename=' +
+      encodeURIComponent(filename) + '&value=' + encodeURIComponent(value);
+
+    return set('free', sub + '.' + z.name + ' is free',
+      'Claim it by opening a pull request that adds ' + filename + '.', [
+        { label: 'Claim it on GitHub', href: href, primary: true },
+        { label: 'How it works', href: '/#faq' }
+      ]);
+  }
+
+  function fillZoneSelect() {
+    if (data.zones.length < 2) return;
+    zoneLabel.hidden = false;
+    data.zones.forEach(function (z) {
+      var opt = document.createElement('option');
+      opt.value = z.name;
+      opt.textContent = '.' + z.name;
+      zoneSelect.appendChild(opt);
+    });
+    zoneSelect.addEventListener('change', function () {
+      suffix.textContent = '.' + currentZone().name;
+      if (input.value) check(input.value);
+    });
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (data) check(input.value);
+  });
+
+  var wanted = window.location.hash.slice(1);
+  var wantedZone = new URLSearchParams(window.location.search).get('zone');
+
+  fetch('/registry-data.json', { cache: 'no-store' })
+    .then(function (r) { return r.json(); })
+    .then(function (json) {
+      data = json;
+      fillZoneSelect();
+      if (wantedZone) {
+        var idx = -1;
+        data.zones.forEach(function (z, i) { if (z.name === wantedZone) idx = i; });
+        if (idx > -1) {
+          zoneSelect.selectedIndex = idx;
+          suffix.textContent = '.' + data.zones[idx].name;
+        }
+      }
+      input.disabled = false;
+      if (wanted) { input.value = wanted; check(wanted); }
+    })
+    .catch(function () {
+      set('blocked', 'Could not load the registry',
+        'The name list failed to load. Reload the page, or check manually in the GitHub repository.', [
+          { label: 'Browse the registry on GitHub', href: 'https://github.com/{{registry_repo}}/tree/main/{{registry_dir}}' }
+        ]);
+    });
+
+  input.disabled = true;
+})();
+</script>
+
+<script src="/assets/nav.js?v={{asset_version}}"></script>
+</body>
+</html>

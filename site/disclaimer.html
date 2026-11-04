@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{{head}}
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+{{header}}
+
+<main class="wrap" id="main">
+
+  <section class="hero legal-hero">
+    <p class="eyebrow">Legal</p>
+    <h1>Disclaimer</h1>
+    <p>
+      A free subdomain is a DNS record someone else hosts. This page states plainly what
+      that means, what {{org_name}} controls, and what it does not.
+    </p>
+    <p class="small muted">Last updated {{year}} &#183; {{legal_count}} sections</p>
+  </section>
+
+  <div class="legal-layout">
+    <aside class="legal-rail">
+      <details class="legal-toc" open>
+        <summary>On this page</summary>
+        <nav aria-label="On this page">
+          <ol>
+          {{legal_toc}}
+          </ol>
+        </nav>
+        <div class="legal-progress" aria-hidden="true"><span></span></div>
+      </details>
+      <dl class="legal-facts">
+        <div class="legal-fact">
+          <dt>Affiliation</dt>
+          <dd>None with any project using a subdomain.</dd>
+        </div>
+        <div class="legal-fact">
+          <dt>Uptime</dt>
+          <dd>No guarantee, best effort only.</dd>
+        </div>
+        <div class="legal-fact">
+          <dt>Content</dt>
+          <dd>Owned and answered for by each registrant.</dd>
+        </div>
+        <div class="legal-fact">
+          <dt>Trademarks</dt>
+          <dd>Belong to their owners, not to us.</dd>
+        </div>
+      </dl>
+    </aside>
+
+    <section class="prose legal-prose">
+
+    <h2>Independent projects</h2>
+    <p>
+      A subdomain belongs to the person who registered it. The project behind it is
+      theirs alone. {{org_name}} does not review, endorse, host, operate, or maintain it,
+      and a name resolving under one of these zones says nothing about the quality,
+      legality, or safety of what it points to.
+    </p>
+
+    <h2>No affiliation</h2>
+    <p>
+      Registration does not create a partnership, an agency, an employment relationship,
+      or any endorsement. Do not present a subdomain as being operated by {{org_name}},
+      and do not use one to imply that a product is official, certified, or sponsored.
+    </p>
+
+    <h2>Not a domain you own</h2>
+    <ul>
+      <li>The zone is controlled by {{org_name}}. The subdomain is a delegation, revocable at any time.</li>
+      <li>You cannot transfer it, sell it, or take it to another registrar.</li>
+      <li>If the zone changes operator or is discontinued, the subdomain goes with it.</li>
+      <li>Search engines may treat the name as part of this domain, not as an independent site.</li>
+    </ul>
+    <p>
+      If the project matters, put it on a domain you own and treat the subdomain as a
+      convenience alias. There is no migration path other than changing your DNS target.
+    </p>
+
+    <h2>Availability</h2>
+    <p>
+      No availability guarantee is made. Resolution depends on resolvers, on the registry
+      automation running, and on the entry being valid. Records can stop resolving
+      because of an upstream problem that has nothing to do with the project using them.
+    </p>
+
+    <h2>Content responsibility</h2>
+    <p>
+      Responsibility for content at a subdomain rests entirely with the person who
+      registered it. Reports of abuse are handled by removing the record, which is the
+      only lever a DNS operator has. See the <a href="/abuse">abuse policy</a>.
+    </p>
+
+    <h2>Trademarks</h2>
+    <p>
+      Names that match a registered trademark are refused when identified, and removed
+      when reported by the holder. A merged entry is never a grant of trademark rights,
+      and being first to a pull request does not create priority over a rights holder.
+    </p>
+
+    <h2>External links</h2>
+    <p>
+      Pages on this site link to third-party material: the registry on GitHub, the
+      Cloudflare resolver, and the organisation site. Those destinations are outside
+      this site's control and their own terms apply once you follow a link.
+    </p>
+
+    <h2>Contact</h2>
+    <p>
+      Concerns about a specific subdomain: <a href="mailto:{{contact_email}}">{{contact_email}}</a>.
+    </p>
+
+    </section>
+  </div>
+
+</main>
+
+{{footer}}
+
+<script src="/assets/nav.js?v={{asset_version}}"></script>
+<script src="/assets/legal.js?v={{asset_version}}"></script>
+</body>
+</html>

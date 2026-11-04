@@ -1,0 +1,55 @@
+name: health
+
+# Probes the live zone over DNS-over-HTTPS and fails the workflow if the apex
+# stops resolving. This is the signal behind the status badge in the READMEs:
+# a green badge means the zone answers, a red one means it does not.
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'   # every 30 minutes
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    name: Probe the zone
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: site
+
+      # Same cross-repo rule as pages.yml: REGISTRY_READ_TOKEN while private,
+      # github.token once the register repo is public.
+      - name: Check out the registry
+        uses: actions/checkout@v4
+        with:
+          repository: HisokaLabs/open-subdomains
+          ref: main
+          path: registry
+          token: ${{ secrets.REGISTRY_READ_TOKEN || github.token }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Probe every subdomain over DoH
+        id: probe
+        working-directory: site
+        run: |
+          node scripts/probe-zone.js > probe.txt
+          cat probe.txt
+
+      # The script exits non-zero when the apex fails, which fails the job and
+      # turns the badge red. Individual subdomains are reported but do not
+      # fail the run: a broken subdomain is a bug, not a zone outage.
+      - name: Summarize
+        if: always()
+        run: |
+          {
+            echo "## Zone probe - $(date -u '+%Y-%m-%d %H:%M UTC')"
+            echo ""
+            cat site/probe.txt
+          } >> "$GITHUB_STEP_SUMMARY"

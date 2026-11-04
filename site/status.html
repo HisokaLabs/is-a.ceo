@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{{head}}
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+{{header}}
+
+<main class="wrap" id="main">
+
+  <section class="hero">
+    <p class="eyebrow">Realtime DNS</p>
+    <h1>Zone <span>status</span></h1>
+    <p>
+      Every registered name is queried live over DNS-over-HTTPS against the
+      authoritative resolver. This runs entirely in your browser: the numbers below
+      are what the public DNS returns right now. Zone apex records are listed but
+      not counted.
+    </p>
+    <div class="stats">
+      <div class="stat"><b id="stat-total" data-count-live data-count-to="0">0</b><span>claimed names</span></div>
+      <div class="stat"><b id="stat-ok" data-count-live data-count-to="0">0</b><span>resolving</span></div>
+      <div class="stat"><b id="stat-fail" data-count-live data-count-to="0">0</b><span>no answer</span></div>
+      <div class="stat"><b id="stat-time">&#8230;</b><span>last run</span></div>
+    </div>
+  </section>
+
+  <section class="table-section">
+    <h2>Subdomains</h2>
+    <p class="lead" id="status-lead">Querying Cloudflare DNS…</p>
+    <div class="table-scroll">
+      <table class="status-table">
+        <thead>
+          <tr>
+            <th scope="col">Subdomain</th>
+            <th scope="col">Owner</th>
+            <th scope="col">Status</th>
+            <th scope="col">Answer</th>
+          </tr>
+        </thead>
+        <tbody id="status-rows">
+          <tr><td colspan="4" class="empty">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+{{footer}}
+
+<script src="/assets/count.js?v={{asset_version}}"></script>
+<script src="/assets/dns.js?v={{asset_version}}"></script>
+<script>
+(function () {
+  var tbody = document.getElementById('status-rows');
+  var lead = document.getElementById('status-lead');
+  var elTotal = document.getElementById('stat-total');
+  var elOk = document.getElementById('stat-ok');
+  var elFail = document.getElementById('stat-fail');
+  var elTime = document.getElementById('stat-time');
+
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function row(entry, state) {
+    var apex = entry.subdomain === '@';
+    var pill = state.ok
+      ? '<span class="pill pill-ok">resolving</span>'
+      : '<span class="pill pill-fail">no answer</span>';
+    if (apex) pill += ' <span class="muted small">apex</span>';
+    var answer = state.ok
+      ? '<span class="mono small">' + esc(state.answer) + '</span>'
+      : '<span class="muted small">none</span>';
+    var href = entry.page ? '/' + esc(entry.page) : 'https://' + esc(entry.domain);
+    return '<tr><td><a class="mono strong" href="' + href + '">' + esc(entry.domain) +
+      '</a></td><td>' + esc(entry.owner) + '</td><td>' + pill + '</td><td>' + answer + '</td></tr>';
+  }
+
+  fetch('/domains.json', { cache: 'no-store' })
+    .then(function (res) { return res.ok ? res.json() : []; })
+    .then(function (list) {
+      var apexes = list.filter(function (e) { return e.subdomain === '@'; });
+      var claimed = list.filter(function (e) { return e.subdomain !== '@'; })
+        .sort(function (a, b) { return a.domain.localeCompare(b.domain); });
+      var entries = apexes.concat(claimed);
+
+      if (!entries.length) {
+        tbody.innerHTML = '<tr><td colspan="4" class="empty">No names in the registry yet.</td></tr>';
+        lead.textContent = 'Nothing to probe yet.';
+        window.CountUp.set(elTotal, 0);
+        window.CountUp.set(elOk, 0);
+        window.CountUp.set(elFail, 0);
+        return;
+      }
+
+      window.CountUp.set(elOk, 0);
+      window.CountUp.set(elFail, 0);
+      window.CountUp.hold(elOk, claimed.length);
+      window.CountUp.hold(elFail, claimed.length);
+      window.CountUp.to(elTotal, claimed.length);
+      tbody.innerHTML = '';
+      lead.textContent = 'Probing ' + entries.length + ' name(s) over DNS-over-HTTPS...';
+
+      var tally = { ok: 0, fail: 0 };
+      window.DohProbe.resolvePool(entries, 4, function (entry, state) {
+        tbody.insertAdjacentHTML('beforeend', row(entry, state));
+        if (entry.subdomain === '@') return;
+        if (state.ok) { tally.ok++; } else { tally.fail++; }
+        window.CountUp.to(elOk, tally.ok);
+        window.CountUp.to(elFail, tally.fail);
+      }).then(function () {
+        var done = new Date().toLocaleTimeString();
+        elTime.textContent = done;
+        lead.textContent = 'Done: ' + claimed.length + ' claimed name(s) plus ' + apexes.length +
+          ' zone apex, checked at ' + done + '.';
+      });
+    })
+    .catch(function () {
+      tbody.innerHTML = '<tr><td colspan="4" class="empty">Could not load the domain list. Reload the page to try again.</td></tr>';
+      lead.textContent = 'Could not load the domain list.';
+    });
+})();
+</script>
+
+<script src="/assets/nav.js?v={{asset_version}}"></script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{{head}}
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+{{header}}
+
+<main class="wrap" id="main">
+
+  <section class="hero legal-hero">
+    <p class="eyebrow">Legal</p>
+    <h1>Terms of <span>Service</span></h1>
+    <p>
+      Claiming a subdomain under any {{org_name}} zone means you accept these terms.
+      They exist so a free service can stay free and stay online for everyone else.
+    </p>
+    <p class="small muted">Last updated {{year}} &#183; {{legal_count}} sections</p>
+  </section>
+
+  <div class="legal-layout">
+    <aside class="legal-rail">
+      <details class="legal-toc" open>
+        <summary>On this page</summary>
+        <nav aria-label="On this page">
+          <ol>
+          {{legal_toc}}
+          </ol>
+        </nav>
+        <div class="legal-progress" aria-hidden="true"><span></span></div>
+      </details>
+      <dl class="legal-facts">
+        <div class="legal-fact">
+          <dt>Cost</dt>
+          <dd>Free, no paid tier, no support contract.</dd>
+        </div>
+        <div class="legal-fact">
+          <dt>Reservation</dt>
+          <dd>A merge is the only thing that reserves a name.</dd>
+        </div>
+        <div class="legal-fact">
+          <dt>Enforcement</dt>
+          <dd>A record can be removed at any time.</dd>
+        </div>
+        <div class="legal-fact">
+          <dt>Liability</dt>
+          <dd>Capped at what you paid, which is zero.</dd>
+        </div>
+      </dl>
+    </aside>
+
+    <section class="prose legal-prose">
+
+    <h2>The service</h2>
+    <p>
+      {{org_name}} operates the DNS zones listed on this site and delegates a subdomain
+      to anyone who follows the registration process. The service is free, has no
+      uptime guarantee, and is run by volunteers on donated infrastructure and
+      automation. There is no contract of sale and no paid support tier.
+    </p>
+
+    <h2>Who can claim a name</h2>
+    <ul>
+      <li>One person or one project per subdomain, claimed through a pull request against the registry.</li>
+      <li>You must be able to hold the record you are asking for and be reachable at the contact address in your entry.</li>
+      <li>Names are first come, first served. A merge is the only thing that reserves a name.</li>
+      <li>Names that impersonate a person, a brand, or a public body are refused, and refused again if resubmitted.</li>
+    </ul>
+
+    <h2>What you may not do</h2>
+    <ul>
+      <li>Phishing, malware delivery, credential harvesting, or command-and-control hosting.</li>
+      <li>Spam, bulk unsolicited mail, or anything that gets the zone onto a blocklist.</li>
+      <li>Content that is illegal in {{jurisdiction}} or at the point where it is consumed.</li>
+      <li>Reselling subdomains, using them as a redirect farm, or claiming names to sit on them.</li>
+      <li>Pointing a record at infrastructure you do not control.</li>
+    </ul>
+    <p>
+      The zones are DNS zones. Records can be removed at any time, without notice, if a
+      name breaks these terms. That is the entire enforcement mechanism: removal of the
+      DNS entry. See the <a href="/abuse">abuse policy</a> for how a report is handled.
+    </p>
+
+    <h2>What you keep</h2>
+    <p>
+      You keep ownership of your content, your code, and your project. You grant
+      {{org_name}} nothing beyond the right to publish the record data you submit in the
+      public registry. The registry itself is public, including the contact details you
+      put in your entry; do not put a private address in it.
+    </p>
+
+    <h2>No warranty</h2>
+    <p>
+      The service is provided as is, with no warranty of availability, resolution,
+      propagation, or fitness for any purpose. Records can break because of an
+      upstream resolver, a registry automation failure, or a mistake in the entry. You
+      are responsible for keeping a copy of anything you cannot afford to lose, and for
+      having a real domain ready if a subdomain is not enough.
+    </p>
+
+    <h2>Limitation of liability</h2>
+    <p>
+      To the extent permitted by law, {{org_name}} is not liable for any loss arising
+      from the use of a subdomain, from a record not resolving, or from a name being
+      removed. If a court finds that liability cannot be excluded, it is limited to the
+      amount you paid for the service, which is zero.
+    </p>
+
+    <h2>Changes and termination</h2>
+    <ul>
+      <li>These terms can change. The current version is always this page.</li>
+      <li>A zone can be discontinued, migrated, or handed to another operator.</li>
+      <li>Your entry can be removed if it breaks these terms or becomes unreachable for a long period.</li>
+      <li>You can remove your own entry at any time by deleting it in the registry.</li>
+    </ul>
+
+    <h2>Contact</h2>
+    <p>
+      Questions about these terms: <a href="mailto:{{contact_email}}">{{contact_email}}</a>.
+      Abuse reports go to the same address with the subject format described in the
+      <a href="/abuse">abuse policy</a>.
+    </p>
+
+    </section>
+  </div>
+
+</main>
+
+{{footer}}
+
+<script src="/assets/nav.js?v={{asset_version}}"></script>
+<script src="/assets/legal.js?v={{asset_version}}"></script>
+</body>
+</html>

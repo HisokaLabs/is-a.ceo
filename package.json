@@ -1,0 +1,15 @@
+{
+  "name": "is-a.ceo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The public website for is-a.ceo, built from the registry at HisokaLabs/open-subdomains.",
+  "scripts": {
+    "build": "node scripts/build-site.js",
+    "serve": "node scripts/serve.js",
+    "dev": "npm run build && npm run serve",
+    "health": "node scripts/probe-zone.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

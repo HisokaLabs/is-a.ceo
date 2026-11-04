@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{{head}}
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+{{header}}
+
+<main class="wrap" id="main">
+
+  <section class="hero">
+    <p class="eyebrow">Free subdomains</p>
+    <h1>{{hero_title}}</h1>
+    <p>{{hero_intro}}</p>
+    <div class="cta-row">
+{{hero_ctas}}
+    </div>
+
+    <div class="stats">
+{{stats_row}}
+    </div>
+  </section>
+
+  <section class="table-section" id="domains">
+{{zone_sections}}
+  </section>
+
+  <section class="prose" id="faq">
+    <h2>How it works</h2>
+    <ol>
+      <li>Fork <a href="https://github.com/{{registry_repo}}">the registry repository</a>.</li>
+      <li>Add a JSON file named after what you want: <code>{{registry_dir}}/&lt;subdomain&gt;.&lt;zone&gt;.json</code>, for example <code>freelancer.{{zone_example}}.json</code>.</li>
+      <li>Open a pull request. A bot previews the exact DNS change and comments it on the PR.</li>
+      <li>Once it is merged, <code>{{actions_repo}}@{{actions_version}}</code> pushes the zone through {{dns_tool}} and this page rebuilds.</li>
+    </ol>
+
+    <h2>What can I point it at?</h2>
+    <p>
+      The default is GitHub Pages, so a name works the moment it merges with no
+      configuration at all. Everything else needs a record: a Vercel or Netlify deploy,
+      a VPS, a Notion page behind a CNAME, an API, or whatever you are actually shipping.
+      The title on the card is the only place a job title is required.
+    </p>
+    <div class="code-block" data-code-block>
+      <div class="code-block-head">
+        <span class="code-block-name">
+          <svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 1.75H4.75A1.75 1.75 0 0 0 3 3.5v9a1.75 1.75 0 0 0 1.75 1.75h6.5A1.75 1.75 0 0 0 13 12.5V5.75z"/><path d="M9 1.75v4h4"/></svg>
+          {{registry_dir}}/freelancer.{{zone_example}}.json
+        </span>
+        <button class="code-copy" type="button" data-code-copy aria-label="Copy the example file">
+          <svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5.75" y="5.75" width="7.5" height="7.5" rx="1.5"/><path d="M10.25 3.5a1.5 1.5 0 0 0-1.5-1.5h-5a1.5 1.5 0 0 0-1.5 1.5v5a1.5 1.5 0 0 0 1.5 1.5"/></svg>
+          <span data-code-label>Copy</span>
+        </button>
+      </div>
+      <pre><code data-lang="json">{
+  "domain": "{{zone_example}}",
+  "subdomain": "freelancer",
+  "owner": "your-github-username",
+  "repo": "github.com/you/landing",
+  "description": "Founder, visionary, occasional shipper",
+  "records": {
+    "CNAME": ["cname.vercel-dns.com"],
+    "TXT": ["resend._domainkey=your-key-here"]
+  }
+}</code></pre>
+    </div>
+    <p>
+      Supported record types: <code>A</code>, <code>AAAA</code>, <code>CNAME</code>,
+      <code>TXT</code>, <code>MX</code>, <code>NS</code>, <code>SRV</code>,
+      <code>CAA</code> and <code>PTR</code>. Mix and match freely inside one file.
+      The subdomain may also be dotted (<code>_acme-challenge.app</code>) or a
+      wildcard over a base you already claim (<code>*.app</code>).
+    </p>
+
+    <h2>Rules, briefly</h2>
+    <ul>
+      <li>One subdomain per person per zone, per purpose. No squatting, no hoarding.</li>
+      <li>No malware, phishing, or anything that would get the whole zone delisted.</li>
+      <li>Keep the content at your subdomain legal in {{jurisdiction}}, where the zones live.</li>
+      <li>Abuse reports go to <a href="mailto:{{contact_email}}">{{contact_email}}</a>.</li>
+    </ul>
+    <p>
+      Full details live in <a href="https://github.com/{{registry_repo}}/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>.
+    </p>
+  </section>
+
+</main>
+
+{{footer}}
+
+<script src="/assets/count.js?v={{asset_version}}"></script>
+<script>
+(function () {
+  var sections = Array.prototype.slice.call(document.querySelectorAll('.zone-section'));
+  if (!sections.length) return;
+  var query = new URLSearchParams(window.location.search).get('q');
+
+  sections.forEach(function (section) {
+    var input = section.querySelector('.table-filter input');
+    var rows = Array.prototype.slice.call(section.querySelectorAll('tbody tr'));
+    var count = section.querySelector('.table-filter .count');
+    if (!input || !rows.length) return;
+
+    function update() {
+      var q = input.value.trim().toLowerCase();
+      var shown = 0;
+      rows.forEach(function (tr) {
+        var match = !q || tr.textContent.toLowerCase().indexOf(q) !== -1;
+        tr.hidden = !match;
+        if (match) shown++;
+      });
+      count.textContent = q ? shown + ' of ' + rows.length + ' shown' : rows.length + ' subdomain(s)';
+      count.hidden = false;
+    }
+
+    update();
+    input.addEventListener('input', update);
+    if (query) {
+      input.value = query;
+      update();
+    }
+  });
+})();
+</script>
+
+<script src="/assets/code.js?v={{asset_version}}"></script>
+<script src="/assets/nav.js?v={{asset_version}}"></script>
+</body>
+</html>

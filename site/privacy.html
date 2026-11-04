@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{{head}}
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+{{header}}
+
+<main class="wrap" id="main">
+
+  <section class="hero legal-hero">
+    <p class="eyebrow">Legal</p>
+    <h1>Privacy <span>Policy</span></h1>
+    <p>
+      This site is a static page and a public registry. It has no accounts, no analytics,
+      no advertising, and no tracking pixels. What follows is the complete list of data
+      that moves.
+    </p>
+    <p class="small muted">Last updated {{year}} &#183; {{legal_count}} sections</p>
+  </section>
+
+  <div class="legal-layout">
+    <aside class="legal-rail">
+      <details class="legal-toc" open>
+        <summary>On this page</summary>
+        <nav aria-label="On this page">
+          <ol>
+          {{legal_toc}}
+          </ol>
+        </nav>
+        <div class="legal-progress" aria-hidden="true"><span></span></div>
+      </details>
+      <dl class="legal-facts">
+        <div class="legal-fact">
+          <dt>Cookies</dt>
+          <dd>None. Not one.</dd>
+        </div>
+        <div class="legal-fact">
+          <dt>Analytics</dt>
+          <dd>None, first or third party.</dd>
+        </div>
+        <div class="legal-fact">
+          <dt>Client storage</dt>
+          <dd>One key: your theme choice.</dd>
+        </div>
+        <div class="legal-fact">
+          <dt>Registry</dt>
+          <dd>Public by design, including contacts.</dd>
+        </div>
+      </dl>
+    </aside>
+
+    <section class="prose legal-prose">
+
+    <h2>What is public by design</h2>
+    <p>
+      Every registered subdomain is in a public Git repository. That includes the name,
+      the record type, the record value, and the contact details you write into your
+      entry. Treat the registry as a public document. If you need to stay unreachable,
+      use a role address, not a personal one.
+    </p>
+
+    <h2>What the site itself stores</h2>
+    <ul>
+      <li><strong>Theme choice.</strong> A single <code>localStorage</code> key named <code>theme</code>, holding <code>light</code> or <code>dark</code>. Following the device stores nothing. It never leaves your browser and there is no server-side copy.</li>
+      <li><strong>Nothing else.</strong> The site sets no cookies, runs no fingerprinting, keeps no session id, and opens no client-side database.</li>
+    </ul>
+
+    <h2>Server logs</h2>
+    <p>
+      The site is served as static files from a hosting provider. That provider keeps
+      ordinary access logs, typically the IP address, user agent, requested path, and
+      timestamp, on its own retention schedule. {{org_name}} does not build profiles
+      from them and does not join them to anything else. Log retention is controlled by
+      the host, not by this site.
+    </p>
+
+    <h2>DNS queries on the status page</h2>
+    <p>
+      The <a href="/status">status page</a> resolves every registered name from your
+      browser using DNS-over-HTTPS. Those queries go to a public resolver operated by
+      Cloudflare, not to this site, and the resolver sees your IP address the same way
+      it would for any other lookup. Nothing is sent back here. The same applies to the
+      name checker: it answers by querying public DNS, not by asking a server of ours.
+    </p>
+
+    <h2>Third parties</h2>
+    <ul>
+      <li><strong>The hosting provider</strong> for this site and its access logs.</li>
+      <li><strong>Cloudflare</strong> for the DNS-over-HTTPS lookups described above.</li>
+      <li><strong>GitHub</strong> for the registry repository and the pull request process. Anything you do there is governed by GitHub's own privacy policy.</li>
+    </ul>
+    <p>There are no other third parties. No fonts are loaded from a CDN, no scripts are served from a third-party domain.</p>
+
+    <h2>Your rights</h2>
+    <p>
+      Because the only personal data this site touches is what you put in a public
+      registry entry, you control it by editing that entry. Removing your entry removes
+      the record at the next deployment; Git history keeps the earlier revision, as any
+      public repository does.
+    </p>
+    <p>
+      For anything else, including a request to remove data, write to
+      <a href="mailto:{{contact_email}}">{{contact_email}}</a>. Requests are handled by a
+      person, not a form.
+    </p>
+
+    <h2>Children</h2>
+    <p>
+      The service is not directed at children and no age data is collected. A subdomain
+      claimed by someone under the age of majority is the responsibility of their
+      guardian.
+    </p>
+
+    <h2>Changes</h2>
+    <p>
+      If what is collected changes, this page changes with it. There is no mailing list
+      to notify, so the version on this page is the version that applies.
+    </p>
+
+    </section>
+  </div>
+
+</main>
+
+{{footer}}
+
+<script src="/assets/nav.js?v={{asset_version}}"></script>
+<script src="/assets/legal.js?v={{asset_version}}"></script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{{head}}
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+{{header}}
+
+<main class="wrap" id="main">
+
+  <section class="hero">
+    <p class="eyebrow">Policy</p>
+    <h1>Abuse <span>policy</span></h1>
+    <p>
+      These zones are DNS zones. What is hosted at a subdomain is the responsibility of
+      whoever claimed it. If something under any of them is harming you, here is exactly
+      who to contact and what to expect.
+    </p>
+    <p class="small muted">Last updated {{year}}.</p>
+  </section>
+
+  <section class="prose">
+
+    <h2>Report it</h2>
+    <p>
+      Email <a href="mailto:{{contact_email}}">{{contact_email}}</a> with the subject line
+      <code>abuse: &lt;full hostname&gt;</code>, for example
+      <code>abuse: bad-actor.{{zone_example}}</code>. Include:
+    </p>
+    <ul>
+      <li>The full hostname, zone included, e.g. <code>bad-actor.{{zone_example}}</code>.</li>
+      <li>What you observed: phishing page, malware delivery, illegal content, spam.</li>
+      <li>Evidence: URLs, screenshots, headers, a timeline. The more concrete, the faster it moves.</li>
+      <li>Your contact address, in case we need to follow up.</li>
+    </ul>
+    <p>
+      Reports in English or Indonesian are both fine. Encrypted mail is welcome: ask for
+      the key and one will be provided.
+    </p>
+
+    <h2>What happens next</h2>
+    <ol>
+      <li><strong>Acknowledged within 48 hours.</strong> You get a reply confirming receipt, even if we cannot share details.</li>
+      <li><strong>Triage.</strong> We check who owns the subdomain from the registry and what the DNS actually resolves to.</li>
+      <li><strong>Action.</strong> Depending on the finding, we may contact the owner, remove the DNS records, or hand the case to the host or registrar involved.</li>
+      <li><strong>Resolution.</strong> You are told what action was taken, unless doing so would compromise another report or an ongoing investigation.</li>
+    </ol>
+    <p>
+      Removing DNS records does not delete hosted content, and it is not a legal remedy.
+      For content that is illegal in your jurisdiction, report it to your local authority
+      as well; we cooperate with lawful requests.
+    </p>
+
+    <h2>What gets a subdomain removed</h2>
+    <ul>
+      <li>Malware, phishing, or credential harvesting.</li>
+      <li>Distribution of illegal content.</li>
+      <li>Spam operations, including anything that gets the zone blocklisted.</li>
+      <li>Impersonating a brand, a public figure, or another person.</li>
+      <li>Anything that puts the whole zone, and every other subdomain in it, at risk of delisting.</li>
+    </ul>
+
+    <h2>Jurisdiction</h2>
+    <p>
+      The zones are operated from {{jurisdiction}} by {{org_name}}. Content hosted at a
+      subdomain is expected to be legal there and at the point of use. The registry's
+      terms are in
+      <a href="https://github.com/{{registry_repo}}/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>.
+    </p>
+
+    <h2>If it is not abuse</h2>
+    <p>
+      Broken DNS, wrong records, or a subdomain that should be renamed: that is a bug,
+      not abuse. Use the
+      <a href="https://github.com/{{registry_repo}}/issues/new/choose">issue tracker</a> instead:
+      it gets fixed faster.
+    </p>
+
+  </section>
+
+</main>
+
+{{footer}}
+
+<script src="/assets/nav.js?v={{asset_version}}"></script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+{
+  "$about": "Site-level configuration. Everything the templates need that is not registry data lives here. Adding a new zone needs NO edit in this file unless you want custom copy: zones come from the registry's _meta.json, and unknown zones fall back to the \"default\" branding with {zone} substituted. Use {zone} in any zone string to have it replaced with the zone name.",
+  "site": {
+    "domain": "is-a.ceo",
+    "org": {
+      "name": "Hisoka Labs",
+      "url": "https://hisoka.net",
+      "email": "contact@hisoka.net"
+    },
+    "registry": {
+      "repo": "HisokaLabs/open-subdomains",
+      "dir": "domains"
+    },
+    "dns": {
+      "tool": "DNSControl",
+      "actionsRepo": "HisokaLabs/dnscontrol-actions",
+      "actionsVersion": "v4"
+    },
+    "jurisdiction": "the Netherlands"
+  },
+  "hero": {
+    "single": {
+      "titlePlain": "Your name,",
+      "titleAccent": "but as a CEO.",
+      "intro": "Every founder needs a landing page. Yours can live at freelancer.{zone} without the eight-hundred-dollar domain, the pitch deck, or the company itself. Point it at whatever you are shipping this weekend."
+    },
+    "multi": {
+      "titlePlain": "Your name,",
+      "titleAccent": "but free.",
+      "intro": "Free subdomains across several zones, run in the open. Pick a zone below, check that the name is free, then claim it with a pull request. Everything is plain JSON, DNSControl and GitHub Actions."
+    }
+  },
+  "zones": {
+    "default": {
+      "tagline": "Free *.{zone} subdomains, claimed with a pull request.",
+      "intro": "Free *.{zone} subdomains for the thing you are about to ship, the thing you already shipped, and the landing page for the thing you have not started yet."
+    },
+    "is-a.ceo": {
+      "tagline": "The zone where the title comes free and the company is optional.",
+      "intro": "Every founder needs a landing page. Yours can live at freelancer.{zone} without the eight-hundred-dollar domain, the pitch deck, or the company itself. Point it at whatever you are shipping this weekend."
+    }
+  }
+}
