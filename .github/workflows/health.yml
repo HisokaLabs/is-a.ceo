@@ -38,6 +38,8 @@ jobs:
       - name: Probe every subdomain over DoH
         id: probe
         working-directory: site
+        env:
+          REGISTRY_PATH: ${{ github.workspace }}/registry
         run: |
           node scripts/probe-zone.js > probe.txt
           cat probe.txt
