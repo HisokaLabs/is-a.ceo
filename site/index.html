@@ -92,6 +92,7 @@
 {{footer}}
 
 <script src="/assets/count.js?v={{asset_version}}"></script>
+<script src="/assets/pager.js?v={{asset_version}}"></script>
 <script>
 (function () {
   var sections = Array.prototype.slice.call(document.querySelectorAll('.zone-section'));
@@ -102,22 +103,44 @@
     var input = section.querySelector('.table-filter input');
     var rows = Array.prototype.slice.call(section.querySelectorAll('tbody tr'));
     var count = section.querySelector('.table-filter .count');
+    var nav = section.querySelector('[data-pager]');
     if (!input || !rows.length) return;
+
+    var pager = nav ? window.Pager.mount(nav, { pageSize: 10 }) : null;
+
+    function matchOf(tr) {
+      var q = input.value.trim().toLowerCase();
+      return !q || tr.textContent.toLowerCase().indexOf(q) !== -1;
+    }
 
     function update() {
       var q = input.value.trim().toLowerCase();
-      var shown = 0;
-      rows.forEach(function (tr) {
-        var match = !q || tr.textContent.toLowerCase().indexOf(q) !== -1;
-        tr.hidden = !match;
-        if (match) shown++;
-      });
-      count.textContent = q ? shown + ' of ' + rows.length + ' shown' : rows.length + ' subdomain(s)';
+      var shown;
+      if (pager) {
+        pager.setFilter(matchOf);
+        shown = pager.refresh();
+        count.textContent = q ? shown + ' of ' + rows.length + ' shown' : shown + ' subdomain(s)';
+      } else {
+        shown = 0;
+        rows.forEach(function (tr) {
+          var match = matchOf(tr);
+          tr.hidden = !match;
+          if (match) shown++;
+        });
+        count.textContent = q ? shown + ' of ' + rows.length + ' shown' : rows.length + ' subdomain(s)';
+      }
       count.hidden = false;
     }
 
+    if (pager) {
+      pager.setItems(rows);
+      pager.setFilter(matchOf);
+    }
     update();
-    input.addEventListener('input', update);
+    input.addEventListener('input', function () {
+      if (pager) pager.setFilter(matchOf);
+      update();
+    });
     if (query) {
       input.value = query;
       update();

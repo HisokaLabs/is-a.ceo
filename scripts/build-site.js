@@ -492,6 +492,17 @@ ${rows || emptyState}
         </tbody>
       </table>
     </div>
+    <nav class="pager" data-pager hidden aria-label="Pages for ${escapeHtml(zone)}">
+      <span class="pager-status mono" data-pager-label>1 / 1</span>
+      <div class="pager-controls">
+        <button type="button" class="pager-btn" data-pager-prev aria-label="Previous page">
+          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button type="button" class="pager-btn" data-pager-next aria-label="Next page">
+          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </nav>
     <p class="zone-claim">
       Want one? <a href="/check?zone=${encodeURIComponent(zone)}">Check if your name is free</a>, then
       <a href="${escapeHtml(claimHref(cfg, zone))}">open a pull request</a>.

@@ -46,6 +46,17 @@
         </tbody>
       </table>
     </div>
+    <nav class="pager" id="status-pager" data-pager hidden aria-label="Pages for subdomains">
+      <span class="pager-status mono" data-pager-label>1 / 1</span>
+      <div class="pager-controls">
+        <button type="button" class="pager-btn" data-pager-prev aria-label="Previous page">
+          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button type="button" class="pager-btn" data-pager-next aria-label="Next page">
+          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </nav>
   </section>
 
 </main>
@@ -53,6 +64,7 @@
 {{footer}}
 
 <script src="/assets/count.js?v={{asset_version}}"></script>
+<script src="/assets/pager.js?v={{asset_version}}"></script>
 <script src="/assets/dns.js?v={{asset_version}}"></script>
 <script>
 (function () {
@@ -62,23 +74,33 @@
   var elOk = document.getElementById('stat-ok');
   var elFail = document.getElementById('stat-fail');
   var elTime = document.getElementById('stat-time');
+  var pagerEl = document.getElementById('status-pager');
+  var pager = pagerEl ? window.Pager.mount(pagerEl, { pageSize: 10 }) : null;
 
   function esc(s) {
     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
-  function row(entry, state) {
+  function rowHtml(entry) {
     var apex = entry.subdomain === '@';
-    var pill = state.ok
+    var href = entry.page ? '/' + esc(entry.page) : 'https://' + esc(entry.domain);
+    return '<tr data-domain="' + esc(entry.domain) + '">' +
+      '<td><a class="mono strong" href="' + href + '">' + esc(entry.domain) + '</a></td>' +
+      '<td>' + esc(entry.owner) + '</td>' +
+      '<td><span class="pill pill-wait">checking</span>' + (apex ? ' <span class="muted small">apex</span>' : '') + '</td>' +
+      '<td><span class="muted small">&#8230;</span></td></tr>';
+  }
+
+  function paint(tr, state) {
+    if (!tr) return;
+    var ok = state && state.ok;
+    tr.children[2].innerHTML = ok
       ? '<span class="pill pill-ok">resolving</span>'
       : '<span class="pill pill-fail">no answer</span>';
-    if (apex) pill += ' <span class="muted small">apex</span>';
-    var answer = state.ok
+    if (tr.dataset.apex === '1') tr.children[2].insertAdjacentHTML('beforeend', ' <span class="muted small">apex</span>');
+    tr.children[3].innerHTML = ok
       ? '<span class="mono small">' + esc(state.answer) + '</span>'
       : '<span class="muted small">none</span>';
-    var href = entry.page ? '/' + esc(entry.page) : 'https://' + esc(entry.domain);
-    return '<tr><td><a class="mono strong" href="' + href + '">' + esc(entry.domain) +
-      '</a></td><td>' + esc(entry.owner) + '</td><td>' + pill + '</td><td>' + answer + '</td></tr>';
   }
 
   fetch('/domains.json', { cache: 'no-store' })
@@ -103,12 +125,22 @@
       window.CountUp.hold(elOk, claimed.length);
       window.CountUp.hold(elFail, claimed.length);
       window.CountUp.to(elTotal, claimed.length);
-      tbody.innerHTML = '';
+
+      tbody.innerHTML = entries.map(rowHtml).join('');
+      var liveRows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+      liveRows.forEach(function (tr, index) {
+        if (entries[index].subdomain === '@') tr.dataset.apex = '1';
+      });
+      if (pager) pager.setItems(liveRows);
+
+      var byDomain = {};
+      liveRows.forEach(function (tr) { byDomain[tr.dataset.domain] = tr; });
+
       lead.textContent = 'Probing ' + entries.length + ' name(s) over DNS-over-HTTPS...';
 
       var tally = { ok: 0, fail: 0 };
       window.DohProbe.resolvePool(entries, 4, function (entry, state) {
-        tbody.insertAdjacentHTML('beforeend', row(entry, state));
+        paint(byDomain[entry.domain], state);
         if (entry.subdomain === '@') return;
         if (state.ok) { tally.ok++; } else { tally.fail++; }
         window.CountUp.to(elOk, tally.ok);
