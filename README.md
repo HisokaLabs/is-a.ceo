@@ -56,6 +56,9 @@ dependencies. Runs on Node 20 and up; tested on 24.
 | `/status` | Live DNS resolution over DNS-over-HTTPS. |
 | `/abuse` | Abuse policy and what happens after a report. |
 | `/d/<zone>/<name>` | Per-subdomain detail: owner, description, full record table. |
+| `/llms.txt` | Plain-text site description for language models and agents. Generated at build time. |
+| `/registry-data.json` | Every zone with its taken, reserved and blocked labels. Powers `/check`. |
+| `/domains.json` | Every registered subdomain with owner, repo and record types. |
 
 Terms, privacy and disclaimer live at `/terms`, `/privacy`, `/disclaimer`.
 

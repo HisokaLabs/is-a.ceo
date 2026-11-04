@@ -616,6 +616,80 @@ function buildRobots(cfg) {
   ].join("\n");
 }
 
+function buildLlmsTxt(cfg, zones, byZone, slugsByZone, totalCount) {
+  const base = `https://${cfg.siteDomain}`;
+  const repo = cfg.registry.repo;
+  const dir = cfg.registry.dir || "domains";
+  const lines = [
+    `# ${cfg.siteDomain}`,
+    "",
+    `> Free ${cfg.siteDomain} subdomains for developers. Pick a name, add one JSON file to the ${repo} registry, open a pull request. Nothing is paid, nothing expires, no account is required. The site is a static render of that registry.`,
+    "",
+    "This file describes the site for language models and agents. It is plain text, generated at build time from the same registry the pages are rendered from, so it never drifts from what the site actually contains.",
+    "",
+    "## What this is",
+    "",
+    `- A free subdomain service. Zone${zones.length === 1 ? "" : "s"}: ${zones.join(", ")}.`,
+    `- ${totalCount} subdomain${totalCount === 1 ? "" : "s"} currently registered.`,
+    "- Every registration is one JSON file in a public GitHub repository.",
+    "- The DNS is real. Records are pushed with DNSControl, not proxied through a redirect.",
+    `- Operated by ${cfg.org.name}.`,
+    "",
+    "## What this is not",
+    "",
+    "- Not a hosting provider. You get a DNS name and point it wherever you like.",
+    "- Not a domain registrar. The apex domain belongs to the operator.",
+    "- Not an email provider, not a CDN, not an analytics service.",
+    `- Not affiliated with any company whose name appears as a reserved or blocked label.`, 
+    "",
+    "## Pages",
+    "",
+    `- [Home](${base}/): what the service is, the live subdomain list, the rules, the FAQ.`,
+    `- [Check](${base}/check): type a name, get free / taken / reserved / blocked before opening a pull request. Reads /registry-data.json in the browser.`,
+    `- [Status](${base}/status): live DNS resolution for every registered name, resolved in the browser against DNS-over-HTTPS.`,
+    `- [Abuse](${base}/abuse): how to report a subdomain, and what happens after.`,
+    `- [Terms](${base}/terms), [Privacy](${base}/privacy), [Disclaimer](${base}/disclaimer): the legal pages.`,
+    `- [Subdomain detail](${base}/d/${zones[0]}/${slugsByZone.get(zones[0])?.values().next().value || "name"}): one page per registered name, with owner, repo, DNS records and purpose.`,
+    "",
+    "## Machine-readable endpoints",
+    "",
+    `- ${base}/registry-data.json: every zone with its taken, reserved and blocked labels. This is what the checker queries. Shape: { zones: [{ name, taken[], reserved[], blocked[], maxLength }] }.`,
+    `- ${base}/domains.json: every registered subdomain with owner, repo, description and DNS record types.`,
+    `- ${base}/sitemap.xml: every indexable URL.`,
+    `- ${base}/llms.txt: this file.`,
+    "",
+    "## How to claim a name",
+    "",
+    "1. Check the name is free on /check, or read /registry-data.json.",
+    `2. Add a file at ${dir}/<subdomain>.<zone>.json to https://github.com/${repo}.`,
+    "3. Fields: domain, subdomain, owner (GitHub username), repo, description, and optionally records.",
+    "4. Open a pull request. CI validates the file, checks the label against the reserved and blocked lists, and previews the DNS diff.",
+    "5. On merge the record is pushed and the site rebuilds.",
+    "",
+    "## Rules",
+    "",
+    "- Lowercase letters, digits and hyphens. Each label starts and ends with a letter or digit.",
+    "- A leading underscore is allowed per label, for records like _acme-challenge.",
+    "- Reserved and blocked labels cannot be claimed. Brand and impersonation risk names are blocked.",
+    "- A public name must not point into a private network.",
+    "- Claims that look like phishing, malware or impersonation are removed.",
+    "",
+    "## Zones",
+    "",
+    ...zones.map((z) => {
+      const count = (byZone.get(z) || []).filter((e) => e.subdomain !== "@").length;
+      return `- ${z}: ${count} registered name${count === 1 ? "" : "s"}.`;
+    }),
+    "",
+    "## Contact",
+    "",
+    `- Abuse reports and general questions: ${cfg.org.email}`,
+    `- Company: ${cfg.org.name} (${cfg.org.url})`,
+    "",
+  ];
+  return lines.join("\n");
+}
+
 function buildStaticPage(cfg, name, extraVars) {
   return renderPage(name, {
     ...commonVars(cfg),
@@ -684,6 +758,10 @@ function main() {
 
   fs.writeFileSync(path.join(DIST_DIR, "CNAME"), `${cfg.siteDomain}\n`);
   fs.writeFileSync(path.join(DIST_DIR, "robots.txt"), buildRobots(cfg));
+  fs.writeFileSync(
+    path.join(DIST_DIR, "llms.txt"),
+    buildLlmsTxt(cfg, zones, byZone, slugsByZone, totalCount)
+  );
 
   fs.writeFileSync(path.join(DIST_DIR, "index.html"), buildIndex(cfg, zones, byZone, totalCount, readRecordTypeCount()));
 
