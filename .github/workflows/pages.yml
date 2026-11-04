@@ -22,23 +22,23 @@ jobs:
     name: Build site
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # While the register repo is private, github.token cannot read it; set a
       # REGISTRY_READ_TOKEN secret (fine-grained PAT, read-only on the register
       # repo) and it is used here. Falls back to github.token, which is enough
       # once the register repo is public.
       - name: Check out the registry
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: HisokaLabs/open-subdomains
           ref: main
           path: registry
           token: ${{ secrets.REGISTRY_READ_TOKEN || github.token }}
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Build static site
         run: npm run build

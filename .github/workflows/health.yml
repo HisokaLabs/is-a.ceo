@@ -17,23 +17,23 @@ jobs:
     name: Probe the zone
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           path: site
 
       # Same cross-repo rule as pages.yml: REGISTRY_READ_TOKEN while private,
       # github.token once the register repo is public.
       - name: Check out the registry
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: HisokaLabs/open-subdomains
           ref: main
           path: registry
           token: ${{ secrets.REGISTRY_READ_TOKEN || github.token }}
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Probe every subdomain over DoH
         id: probe
