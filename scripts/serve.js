@@ -32,7 +32,13 @@ const MIME = {
 };
 
 function resolveFile(urlPath) {
-  const clean = decodeURIComponent(urlPath.split("?")[0]);
+  let clean;
+  try {
+    clean = decodeURIComponent(urlPath.split("?")[0]);
+  } catch {
+    return null;
+  }
+  if (clean.includes("\0")) return null;
   const candidates = [];
   if (clean === "/" || clean.endsWith("/")) {
     candidates.push(path.join(DIST_DIR, clean, "index.html"));
@@ -41,7 +47,9 @@ function resolveFile(urlPath) {
     candidates.push(path.join(DIST_DIR, `${clean}.html`));
   }
   for (const file of candidates) {
-    if (fs.existsSync(file) && fs.statSync(file).isFile()) return file;
+    const resolved = path.resolve(file);
+    if (resolved !== DIST_DIR && !resolved.startsWith(DIST_DIR + path.sep)) continue;
+    if (fs.existsSync(resolved) && fs.statSync(resolved).isFile()) return resolved;
   }
   return null;
 }
