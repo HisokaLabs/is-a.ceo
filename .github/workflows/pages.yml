@@ -5,7 +5,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: '17 * * * *'   # hourly, so the list stays fresh even without a push
+    - cron: '*/5 * * * *'
   repository_dispatch:
     types: [registry-updated]
   workflow_dispatch:
@@ -26,10 +26,6 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      # While the register repo is private, github.token cannot read it; set a
-      # REGISTRY_READ_TOKEN secret (fine-grained PAT, read-only on the register
-      # repo) and it is used here. Falls back to github.token, which is enough
-      # once the register repo is public.
       - name: Check out the registry
         uses: actions/checkout@v5
         with:
