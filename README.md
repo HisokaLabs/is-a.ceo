@@ -73,7 +73,7 @@ Terms, privacy and disclaimer live at `/terms`, `/privacy`, `/disclaimer`.
 
 ## Deployment
 
-`pages.yml` runs on every push to `main`, hourly, and on manual dispatch. It checks out both repositories, builds, and publishes `dist/` to GitHub Pages with the custom domain written from `site/config.json`.
+`pages.yml` runs on every push to `main`, every 5 minutes, and on manual dispatch. It checks out both repositories, builds, and publishes `dist/` to GitHub Pages with the custom domain written from `site/config.json`. The short cron is what keeps the site in step with the registry: a new subdomain merged in `open-subdomains` shows up within 5 minutes without any cross-repo token.
 
 `health.yml` runs every 30 minutes and resolves every name over DNS-over-HTTPS. It fails when a zone stops answering SOA or the site host has no records. A single broken subdomain is reported but does not fail the job.
 
