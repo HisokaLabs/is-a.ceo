@@ -62,22 +62,29 @@
   "repo": "github.com/you/landing",
   "description": "Founder, visionary, occasional shipper",
   "records": {
-    "CNAME": ["cname.vercel-dns.com"],
-    "TXT": ["resend._domainkey=your-key-here"]
+    "CNAME": "cname.vercel-dns.com"
   }
 }</code></pre>
     </div>
     <p>
       Supported record types: <code>A</code>, <code>AAAA</code>, <code>CNAME</code>,
       <code>TXT</code>, <code>MX</code>, <code>NS</code>, <code>SRV</code>,
-      <code>CAA</code> and <code>PTR</code>. Mix and match freely inside one file.
-      The subdomain may also be dotted (<code>_acme-challenge.app</code>) or a
-      wildcard over a base you already claim (<code>*.app</code>).
+      <code>CAA</code> and <code>PTR</code>. The subdomain may also be dotted
+      (<code>_acme-challenge.app</code>) or a wildcard over a base you already
+      claim (<code>*.app</code>).
+    </p>
+    <p>
+      A <code>CNAME</code> takes exactly one target, written as a bare string; a
+      one-item array is still accepted for older files, and a trailing dot is
+      optional. Because DNS forbids it, a <code>CNAME</code> cannot share its name
+      with <code>A</code>, <code>AAAA</code> or <code>TXT</code>: verification TXT
+      records belong on their own dotted name, in their own file.
     </p>
 
     <h2>Rules, briefly</h2>
     <ul>
       <li>One subdomain per person per zone, per purpose. No squatting, no hoarding.</li>
+      <li>One <code>CNAME</code> per name, and it cannot point back at its own name or the zone apex.</li>
       <li>No malware, phishing, or anything that would get the whole zone delisted.</li>
       <li>Keep the content at your subdomain legal in {{jurisdiction}}, where the zones live.</li>
       <li>Abuse reports go to <a href="mailto:{{contact_email}}">{{contact_email}}</a>.</li>

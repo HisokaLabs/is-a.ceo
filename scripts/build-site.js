@@ -43,6 +43,17 @@ function readRegistryMeta() {
   };
 }
 
+function normalizeRecords(records) {
+  if (!records || typeof records !== "object") return {};
+  const copy = { ...records };
+  if (copy.CNAME != null) {
+    const cname = copy.CNAME;
+    const targets = Array.isArray(cname) ? cname : [cname];
+    copy.CNAME = targets.filter((v) => typeof v === "string" && v.length > 0).slice(0, 1);
+  }
+  return copy;
+}
+
 function readRegistryEntries() {
   const domainsDir = path.join(REGISTRY_PATH, "domains");
   if (!fs.existsSync(domainsDir)) fail(`registry not found at ${REGISTRY_PATH}`);
@@ -66,7 +77,7 @@ function readRegistryEntries() {
         owner: entry.owner,
         repo: entry.repo || null,
         description: entry.description || "",
-        records: entry.records || {},
+        records: normalizeRecords(entry.records),
       });
     });
   }
@@ -697,6 +708,8 @@ function buildLlmsTxt(cfg, zones, byZone, slugsByZone, totalCount) {
     "## Rules",
     "",
     "- Lowercase letters, digits and hyphens. Each label starts and ends with a letter or digit.",
+    "- Records are optional; omit them entirely for the GitHub Pages default.",
+    "- records.CNAME is a single target: a bare string, or a one-item array for older files. A trailing dot is optional. DNS forbids a CNAME sharing its name with A, AAAA or TXT records, and a CNAME cannot target its own name or the zone apex. Put verification TXT records on their own dotted name.",
     "- A leading underscore is allowed per label, for records like _acme-challenge.",
     "- Reserved and blocked labels cannot be claimed. Brand and impersonation risk names are blocked.",
     "- A public name must not point into a private network.",
