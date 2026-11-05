@@ -1129,6 +1129,10 @@ tbody tr:hover {
   color: var(--err);
 }
 
+.check-result[data-state="word-class"] .verdict {
+  color: var(--info);
+}
+
 .check-result .check-file {
   margin: 8px 0 0;
   color: var(--faint);

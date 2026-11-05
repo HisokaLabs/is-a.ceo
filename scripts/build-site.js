@@ -5,6 +5,7 @@
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
+const { CLASSES } = require("./name-classes.js");
 
 const ROOT = path.resolve(__dirname, "..");
 const SITE_DIR = path.join(ROOT, "site");
@@ -30,7 +31,7 @@ function readJson(file, what) {
 function readRegistryMeta() {
   const metaPath = path.join(REGISTRY_PATH, "domains", "_meta.json");
   if (!fs.existsSync(metaPath)) {
-    return { zones: [], reserved: [], blocked: [], maxLength: 63 };
+    return { zones: [], reserved: [], blocked: [], maxLength: 63, reservedClasses: [], advisoryClasses: [] };
   }
   const parsed = readJson(metaPath, "registry meta");
   const meta = parsed._meta || parsed;
@@ -40,6 +41,8 @@ function readRegistryMeta() {
     reserved: (meta.reserved || []).map((s) => String(s).toLowerCase()),
     blocked: (meta.blocked || []).map((s) => String(s).toLowerCase()),
     maxLength: typeof meta.maxLength === "number" ? meta.maxLength : 63,
+    reservedClasses: ((meta.namePolicy || {}).reservedClasses || []).map((s) => String(s).toLowerCase()),
+    advisoryClasses: ((meta.namePolicy || {}).advisoryClasses || []).map((s) => String(s).toLowerCase()),
   };
 }
 
@@ -567,11 +570,19 @@ function buildDomainPage(cfg, zone, entry, slug) {
 function buildRegistryData(zones, byZone, meta) {
   return `${JSON.stringify(
     {
+      nameClasses: CLASSES.map((cls) => ({
+        name: cls.name,
+        label: cls.label,
+        why: cls.why,
+        words: cls.words,
+      })),
       zones: zones.map((zone) => ({
         name: zone,
         maxLength: meta.maxLength,
         reserved: meta.reserved,
         blocked: meta.blocked,
+        reservedClasses: meta.reservedClasses,
+        advisoryClasses: meta.advisoryClasses,
         taken: takenNames(byZone.get(zone) || []),
       })),
     },
@@ -678,7 +689,8 @@ function buildLlmsTxt(cfg, zones, byZone, slugsByZone, totalCount) {
     "- Not a hosting provider. You get a DNS name and point it wherever you like.",
     "- Not a domain registrar. The apex domain belongs to the operator.",
     "- Not an email provider, not a CDN, not an analytics service.",
-    `- Not affiliated with any company whose name appears as a reserved or blocked label.`, 
+    `- Not affiliated with any company whose name appears as a reserved or blocked label.`,
+    "- A label has to identify the person behind it. Pronouns, articles and grammar words are refused by class, so the reserved list does not have to grow.",
     "",
     "## Pages",
     "",
@@ -691,7 +703,7 @@ function buildLlmsTxt(cfg, zones, byZone, slugsByZone, totalCount) {
     "",
     "## Machine-readable endpoints",
     "",
-    `- ${base}/registry-data.json: every zone with its taken, reserved and blocked labels. This is what the checker queries. Shape: { zones: [{ name, taken[], reserved[], blocked[], maxLength }] }.`,
+    `- ${base}/registry-data.json: every zone with its taken, reserved and blocked labels, plus the word classes the checker refuses. This is what the checker queries. Shape: { nameClasses: [{ name, label, why, words[] }], zones: [{ name, taken[], reserved[], blocked[], reservedClasses[], advisoryClasses[], maxLength }] }.`,
     `- ${base}/domains.json: every registered subdomain with owner, repo, description and DNS record types.`,
     `- ${base}/domains.schema.json: JSON Schema (draft-07) for a single registry entry, the same file the registry repository validates against. Its \`$id\` is this URL, so an entry can point at ${base}/domains.schema.json and be checked by any JSON Schema validator.`,
     `- ${base}/sitemap.xml: every indexable URL.`,
@@ -702,7 +714,7 @@ function buildLlmsTxt(cfg, zones, byZone, slugsByZone, totalCount) {
     "1. Check the name is free on /check, or read /registry-data.json.",
     `2. Add a file at ${dir}/<subdomain>.<zone>.json to https://github.com/${repo}.`,
     "3. Fields: domain, subdomain, owner (GitHub username), repo, description, and optionally records.",
-    "4. Open a pull request. CI validates the file, checks the label against the reserved and blocked lists, and previews the DNS diff.",
+    "4. Open a pull request. CI validates the file, rejects labels that are reserved, blocked, or a pronoun/article/grammar word, and previews the DNS diff.",
     "5. On merge the record is pushed and the site rebuilds.",
     "",
     "## Rules",

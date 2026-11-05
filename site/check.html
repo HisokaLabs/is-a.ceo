@@ -87,7 +87,8 @@
     free: 'Available.',
     taken: 'Taken.',
     reserved: 'Reserved.',
-    blocked: 'Blocked.'
+    blocked: 'Blocked.',
+    'word-class': 'Not a name.'
   };
 
   function set(state, domain, message, buttons, file) {
@@ -150,6 +151,25 @@
     return data.zones[zoneSelect.selectedIndex] || data.zones[0];
   }
 
+  function classify(label, enabled, classes) {
+    if (!enabled || !enabled.length) return null;
+    var candidates = [label];
+    var stripped = label.replace(/[-_.\s]/g, '');
+    var leet = stripped.replace(/[013456789@$!+]/g, function (ch) {
+      return { '0': 'o', '1': 'i', '3': 'e', '4': 'a', '5': 's', '6': 'g', '7': 't', '8': 'b', '9': 'g', '@': 'a', '$': 's', '!': 'i', '+': 't' }[ch] || ch;
+    });
+    candidates.push(leet.replace(/(.)\1{2,}/g, '$1'));
+    candidates.push(leet);
+    for (var c = 0; c < candidates.length; c++) {
+      for (var i = 0; i < classes.length; i++) {
+        var cls = classes[i];
+        if (enabled.indexOf(cls.name) === -1) continue;
+        if (cls.words.indexOf(candidates[c]) !== -1) return cls;
+      }
+    }
+    return null;
+  }
+
   function check(raw) {
     var z = currentZone();
     var sub = String(raw || '').toLowerCase().trim().replace(/\.$/, '');
@@ -185,6 +205,13 @@
     if (isPlain && z.blocked.indexOf(sub) !== -1) {
       return set('blocked', sub + '.' + z.name,
         'Held back as a brand or impersonation risk.', []);
+    }
+    if (isPlain) {
+      var wordClass = classify(sub, (z.reservedClasses || []), (data.nameClasses || []));
+      if (wordClass) {
+        return set('word-class', sub + '.' + z.name,
+          'That is ' + wordClass.label + '\u2014' + wordClass.why + '. Pick the name of the GitHub account the record points at.', []);
+      }
     }
     if (z.taken.indexOf(sub) !== -1 || z.taken.indexOf(name) !== -1) {
       return set('taken', sub + '.' + z.name,
